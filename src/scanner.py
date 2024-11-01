@@ -3,7 +3,7 @@ import threading
 from queue import Queue
 
 # Configuration 
-target = "localhost"  # Target IP address
+target = "45.33.32.156"  # Target IP address
 port_range = (1, 1024)  # The range of ports to scan
 
 # Vulnerabilities for banner matching
@@ -34,11 +34,13 @@ def grab_banner(port):
             print(f"[!] Known vulnerability detected on port {port}: {banner}")
         sock.close()
         return banner
-    except:
+    except Exception as e:
+        print(f"Error grabbing banner on port {port}: {e}")
         return None
 
 # Scan a specific port
 def scan_port(port):
+    print(f"Scanning port {port}...")  
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(1)
@@ -49,8 +51,9 @@ def scan_port(port):
             if banner:
                 print(f"    Banner: {banner}")
         sock.close()
-    except:
-        pass
+    except Exception as e:
+        print(f"Error scanning port {port}: {e}")
+
 
 # Thread function for multi-threaded scanning
 def threader():
@@ -63,6 +66,8 @@ def threader():
 queue = Queue()
 num_threads = 100
 
+print(f"Starting scan on target {target} from port {port_range[0]} to {port_range[1]}...")
+
 # Starting threads
 for _ in range(num_threads):
     thread = threading.Thread(target=threader)
@@ -74,3 +79,5 @@ for port in range(port_range[0], port_range[1] + 1):
     queue.put(port)
 
 queue.join()
+
+print("Scan completed.")
